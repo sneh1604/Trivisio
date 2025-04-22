@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';  // Add this import
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ImageService {
   final String hfApiKey = dotenv.env['HUGGINGFACE_API_TOKEN'] ?? '';
@@ -10,29 +9,35 @@ class ImageService {
   final String stableDiffusionModel = "stabilityai/stable-diffusion-3.5-large";
   final String dalleModel = "stabilityai/stable-diffusion-3.5-large-turbo";
 
-  // Generate images using both models
+  // Generate images using all three models
   Future<Map<String, Uint8List?>> generateImages(String prompt) async {
-    // final stableDiffusionImage1 = await _generateImage(prompt, stableDiffusionModel1);
-    // final stableDiffusionImage = await _generateImage(prompt, stableDiffusionModel);
-    // final dalleImage = await _generateImage(prompt, dalleModel);
-    final s = await Future.wait([
-      _generateImage(prompt, stableDiffusionModel1),
-    _generateImage(prompt, stableDiffusionModel),
-     _generateImage(prompt, dalleModel),
-    ]);
-final stableDiffusionImage1 = s[0];
-    final stableDiffusionImage = s[1];
-    final dalleImage = s[2];
-    return {
-      "Stable Diffusion 2": stableDiffusionImage1,
-      "Stable Diffusion 3.5": stableDiffusionImage,
-      "Stable Diffusion 3.5 Large Turbo": dalleImage,
-    };
+    try {
+      // Run all three requests concurrently for better performance
+      final results = await Future.wait([
+        _generateImage(prompt, stableDiffusionModel1),
+        _generateImage(prompt, stableDiffusionModel),
+        _generateImage(prompt, dalleModel),
+      ]);
+
+      return {
+        "Stable Diffusion 2": results[0],
+        "Stable Diffusion 3.5": results[1],
+        "Stable Diffusion 3.5 Large Turbo": results[2],
+      };
+    } catch (e) {
+      print("Error generating images: $e");
+      return {
+        "Stable Diffusion 2": null,
+        "Stable Diffusion 3.5": null,
+        "Stable Diffusion 3.5 Large Turbo": null,
+      };
+    }
   }
 
   // Function to generate images from Hugging Face models
   Future<Uint8List?> _generateImage(String prompt, String model) async {
     try {
+      print("Generating image with model: $model");
       final response = await http.post(
         Uri.parse("https://api-inference.huggingface.co/models/$model"),
         headers: {
@@ -53,11 +58,13 @@ final stableDiffusionImage1 = s[0];
       if (response.statusCode == 200) {
         return response.bodyBytes;
       } else {
-        print("Error: ${response.statusCode} - ${response.body}");
+        print(
+            "Error with model $model: ${response.statusCode} - ${response.body}");
+        return null;
       }
     } catch (e) {
-      print("Exception: $e");
+      print("Exception with model $model: $e");
+      return null;
     }
-    return null;
   }
 }

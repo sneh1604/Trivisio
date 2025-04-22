@@ -38,9 +38,21 @@ class _HomeScreenState extends State<HomeScreen> {
       final images = await _imageService.generateImages(_promptController.text);
       setState(() {
         _generatedImages = images;
-        _message = _generatedImages.values.every((image) => image == null)
-            ? "❌ Failed to generate images."
-            : "🎨 Images created! Compare the results.";
+
+        // Count how many images were successfully generated
+        int successCount = 0;
+        images.values.forEach((image) {
+          if (image != null) successCount++;
+        });
+
+        if (successCount == 0) {
+          _message = "❌ Failed to generate any images.";
+        } else if (successCount < 3) {
+          _message =
+              "⚠️ Generated $successCount of 3 images. Some models failed.";
+        } else {
+          _message = "🎨 All images created successfully! Compare the results.";
+        }
       });
     } catch (e) {
       setState(() {
@@ -188,29 +200,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 10),
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: FittedBox(
-                fit: BoxFit.fitWidth,
-                child: Image.memory(
-                  imageBytes,
-                  fit: BoxFit.contain,
-                ),
+              borderRadius: BorderRadius.circular(8),
+              child: Image.memory(
+                imageBytes,
+                fit: BoxFit.cover,
               ),
             ),
             SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: () =>
                   _downloadImage(imageBytes, title.replaceAll(" ", "_")),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
               icon: Icon(Icons.download),
               label: Text("Download"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+              ),
             ),
           ],
         ),

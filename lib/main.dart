@@ -9,8 +9,8 @@ import 'package:sample_login/screens/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
 
   runApp(MyApp());
@@ -25,10 +25,25 @@ class MyApp extends StatelessWidget {
           create: (context) => AuthService(),
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark(),
-        home: MainScreen(),
+      child: Consumer<AuthService>(
+        builder: (context, authService, _) {
+          if (!authService.isInitialized) {
+            // Show loading screen until auth state is determined
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData.dark(),
+              home: Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              ),
+            );
+          }
+
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData.dark(),
+            home: authService.user != null ? MainScreen() : LoginScreen(),
+          );
+        },
       ),
     );
   }
@@ -56,13 +71,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _logout() async {
-    await AuthService().signOut();
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
-      );
-    }
+    await Provider.of<AuthService>(context, listen: false).signOut();
+    // The navigation will happen automatically due to the Consumer in MyApp
   }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,6 +11,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 "AI Image Generator",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               SizedBox(height: 30),
               // Email Input
@@ -39,7 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: Icon(Icons.email, color: Colors.white70),
                   filled: true,
                   fillColor: Colors.grey[900],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30)),
                 ),
               ),
               SizedBox(height: 15),
@@ -54,14 +58,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: Icon(Icons.lock, color: Colors.white70),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                       color: Colors.white70,
                     ),
-                    onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                    onPressed: () =>
+                        setState(() => isPasswordVisible = !isPasswordVisible),
                   ),
                   filled: true,
                   fillColor: Colors.grey[900],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30)),
                 ),
               ),
               SizedBox(height: 20),
@@ -73,9 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
                 ),
-                child: Text("Sign In", style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: Text("Sign In",
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
               SizedBox(height: 20),
               // OR Divider
@@ -92,35 +102,78 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 20),
               // Google Sign In Button
               ElevatedButton(
-                onPressed: () async {
-                  final user = await Provider.of<AuthService>(context, listen: false).signInWithGoogle();
-                  if (user != null) {
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
-                  }
-                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  foregroundColor: Colors.black,
+                  minimumSize: Size(double.infinity, 50),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset("lib/images/google.png", height: 24),
-                    SizedBox(width: 10),
-                    Text("Sign in with Google", style: TextStyle(fontSize: 18, color: Colors.black87)),
-                  ],
-                ),
+                onPressed: isLoading ? null : () => _handleGoogleSignIn(),
+                child: isLoading
+                    ? CircularProgressIndicator()
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Using online Google G logo
+                          Container(
+                            height: 24.0,
+                            width: 24.0,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  'https://developers.google.com/identity/images/g-logo.png',
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            "Sign in with Google",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
               SizedBox(height: 20),
               TextButton(
                 onPressed: () {},
-                child: Text("Forgot Password?", style: TextStyle(color: Colors.white70)),
+                child: Text("Forgot Password?",
+                    style: TextStyle(color: Colors.white70)),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final user = await authService.signInWithGoogle(context);
+
+      // No need to navigate manually - the Consumer in main.dart will do it
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Sign in failed: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 }
