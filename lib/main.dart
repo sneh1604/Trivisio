@@ -6,22 +6,18 @@ import 'package:sample_login/screens/auth_check_screen.dart';
 import 'package:sample_login/screens/home_screen.dart';
 import 'package:sample_login/screens/description_screen.dart';
 import 'package:sample_login/screens/login_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
-  await Firebase.initializeApp(); 
+  await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   runApp(MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
-
-  
-
-
   @override
-
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -47,9 +43,9 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    HomeScreen(),          // Home screen for image generation
-    DescriptionScreen(),   // Details of AI models used
-    AuthCheckScreen(),     // Authentication check screen (previously the main screen)
+    HomeScreen(), // Home screen for image generation
+    DescriptionScreen(), // Details of AI models used
+    AuthCheckScreen(), // Authentication check screen (previously the main screen)
   ];
 
   void _onItemTapped(int index) {
@@ -59,8 +55,7 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  
-    Future<void> _logout() async {
+  Future<void> _logout() async {
     await AuthService().signOut();
     if (mounted) {
       Navigator.pushReplacement(
@@ -70,18 +65,18 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("AI Image Generator")
-      , actions: [
+      appBar: AppBar(
+        title: Text("AI Image Generator"),
+        actions: [
           IconButton(
             icon: Icon(Icons.logout, color: Colors.white),
             onPressed: _logout,
           ),
-        ],),
-      
+        ],
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -91,7 +86,8 @@ class _MainScreenState extends State<MainScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.auto_fix_high_sharp, size: 50, color: Colors.white),
+                  Icon(Icons.auto_fix_high_sharp,
+                      size: 50, color: Colors.white),
                   SizedBox(height: 10),
                   Text("AI Image Generator",
                       style: TextStyle(fontSize: 22, color: Colors.white)),
@@ -108,11 +104,10 @@ class _MainScreenState extends State<MainScreen> {
               title: Text("Model Details"),
               onTap: () => _onItemTapped(1),
             ),
-            
           ],
         ),
       ),
-      body: _screens[_selectedIndex], 
+      body: _screens[_selectedIndex],
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';  // Add this import
+
 
 class ImageService {
-  final String hfApiKey = "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";
+  final String hfApiKey = dotenv.env['HUGGINGFACE_API_TOKEN'] ?? '';
   final String stableDiffusionModel1 = "stabilityai/stable-diffusion-2";
   final String stableDiffusionModel = "stabilityai/stable-diffusion-3.5-large";
   final String dalleModel = "stabilityai/stable-diffusion-3.5-large-turbo";
