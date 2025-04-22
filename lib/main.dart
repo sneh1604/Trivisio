@@ -31,16 +31,80 @@ class MyApp extends StatelessWidget {
             // Show loading screen until auth state is determined
             return MaterialApp(
               debugShowCheckedModeBanner: false,
-              theme: ThemeData.dark(),
+              title: 'TRIVISIO',
+              theme: ThemeData(
+                brightness: Brightness.dark,
+                primaryColor: Color(0xFF6C63FF),
+                colorScheme: ColorScheme.dark(
+                  primary: Color(0xFF6C63FF),
+                  secondary: Color(0xFF03DAC5),
+                  surface: Color(0xFF121212),
+                  background: Color(0xFF121212),
+                ),
+                scaffoldBackgroundColor: Color(0xFF121212),
+                fontFamily: 'Montserrat',
+                textTheme: TextTheme(
+                  headlineMedium: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                appBarTheme: AppBarTheme(
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
               home: Scaffold(
-                body: Center(child: CircularProgressIndicator()),
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "TRIVISIO",
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF6C63FF),
+                          letterSpacing: 3,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           }
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: ThemeData.dark(),
+            title: 'TRIVISIO',
+            theme: ThemeData(
+              brightness: Brightness.dark,
+              primaryColor: Color(0xFF6C63FF),
+              colorScheme: ColorScheme.dark(
+                primary: Color(0xFF6C63FF),
+                secondary: Color(0xFF03DAC5),
+                surface: Color(0xFF121212),
+                background: Color(0xFF121212),
+              ),
+              scaffoldBackgroundColor: Color(0xFF121212),
+              fontFamily: 'Montserrat',
+              textTheme: TextTheme(
+                headlineMedium: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              appBarTheme: AppBarTheme(
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+              ),
+            ),
             home: authService.user != null ? MainScreen() : LoginScreen(),
           );
         },
@@ -60,7 +124,6 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     HomeScreen(), // Home screen for image generation
     DescriptionScreen(), // Details of AI models used
-    AuthCheckScreen(), // Authentication check screen (previously the main screen)
   ];
 
   void _onItemTapped(int index) {
@@ -77,47 +140,205 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String _appBarTitles = ["Create", "Explore Models"][_selectedIndex];
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text("AI Image Generator"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: _logout,
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.auto_fix_high_sharp,
-                      size: 50, color: Colors.white),
-                  SizedBox(height: 10),
-                  Text("AI Image Generator",
-                      style: TextStyle(fontSize: 22, color: Colors.white)),
-                ],
+            Text(
+              "TRIVISIO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 2,
               ),
             ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text("Home"),
-              onTap: () => _onItemTapped(0),
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text("Model Details"),
-              onTap: () => _onItemTapped(1),
+            Text(
+              _appBarTitles,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+              child: Icon(Icons.logout_outlined, color: Colors.white, size: 18),
+            ),
+            onPressed: _logout,
+          ),
+          SizedBox(width: 8),
+        ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
       ),
-      body: _screens[_selectedIndex],
+      drawer: Drawer(
+        child: Container(
+          color: Theme.of(context).colorScheme.background,
+          child: Column(
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF6C63FF),
+                      Color(0xFF5A56E0),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child:
+                          Icon(Icons.flash_on, size: 30, color: Colors.white),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "TRIVISIO",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    Text(
+                      "AI-Powered Image Generation",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _buildDrawerItem(
+                      icon: Icons.auto_awesome,
+                      title: "Create Images",
+                      isSelected: _selectedIndex == 0,
+                      onTap: () => _onItemTapped(0),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.psychology,
+                      title: "AI Models",
+                      isSelected: _selectedIndex == 1,
+                      onTap: () => _onItemTapped(1),
+                    ),
+                    Divider(color: Colors.white12),
+                    _buildDrawerItem(
+                      icon: Icons.settings,
+                      title: "Settings",
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.help_outline,
+                      title: "Help & Support",
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "TRIVISIO v1.0",
+                  style: TextStyle(
+                    color: Colors.white30,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: _screens[_selectedIndex],
+      ),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: [
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome),
+            label: 'Create',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.psychology),
+            label: 'Models',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    bool isSelected = false,
+    VoidCallback? onTap,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color:
+            isSelected ? Theme.of(context).colorScheme.primary : Colors.white70,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color:
+              isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      onTap: onTap,
+      selected: isSelected,
+      selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
     );
   }
 }
