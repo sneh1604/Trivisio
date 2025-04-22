@@ -1,0 +1,40 @@
+plugins {
+    id "com.android.application"
+    id "com.google.gms.google-services" // Firebase integration
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin" // Flutter Gradle Plugin must be last
+}
+
+android {
+    namespace "com.example.sample_login" // Ensure this is set correctly
+    compileSdk 34 // Updated to match latest SDK requirements
+
+    ndkVersion "25.2.9519653" // Use a fixed version or update as needed
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        applicationId "com.example.sample_login"
+        minSdkVersion 23
+        targetSdkVersion 34 // Updated to match latest plugin requirements
+        versionCode 1 // Set your version code
+        versionName "1.0" // Set your version name
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source "../.."
+}
