@@ -10,9 +10,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp();
 
+  // Load .env file first
+  await dotenv.load(fileName: ".env");
+  if (dotenv.env['HUGGINGFACE_API_TOKEN']?.isEmpty ?? true) {
+    print('WARNING: HUGGINGFACE_API_TOKEN not found in .env file');
+  }
+
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 

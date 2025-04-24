@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ImageService {
   final String hfApiKey = dotenv.env['HUGGINGFACE_API_TOKEN'] ?? '';
+  final String hfApiKey2 = dotenv.env['FLUX_API_TOKEN'] ?? '';
+  final String hfApiKey3 = dotenv.env['SCHNELL_API_TOKEN'] ?? '';
 
   final String fluxModel = "black-forest-labs/FLUX.1-dev";
   final String fluxSchnellModel = "black-forest-labs/FLUX.1-schnell";
@@ -23,14 +25,24 @@ class ImageService {
           _debugPrint('Error in FLUX model: $e');
           return null;
         }),
-        _generateImage(enhancedPrompt, stableDiffusionModel).catchError((e) {
-          _debugPrint('Error in Stable Diffusion: $e');
+        _generateImage(enhancedPrompt + " something beautiful", fluxModel)
+            .catchError((e) {
+          _debugPrint('Error in FLUX model: $e');
           return null;
         }),
-        _generateImage(enhancedPrompt, fluxSchnellModel).catchError((e) {
-          _debugPrint('Error in FLUX.Schnell model: $e');
+        _generateImage(enhancedPrompt + " something good", fluxModel)
+            .catchError((e) {
+          _debugPrint('Error in FLUX model: $e');
           return null;
         }),
+        // _generateImage(enhancedPrompt, stableDiffusionModel).catchError((e) {
+        //   _debugPrint('Error in Stable Diffusion: $e');
+        //   return null;
+        // }),
+        // _generateImage(enhancedPrompt, fluxSchnellModel).catchError((e) {
+        //   _debugPrint('Error in FLUX.Schnell model: $e');
+        //   return null;
+        // }),
       ]);
 
       return {
@@ -159,11 +171,24 @@ class ImageService {
         int.tryParse(headers['x-ratelimit-remaining'] ?? '0') ?? 0;
     if (remaining < 5) {
       _debugPrint('Rate limit approaching for $model: $remaining remaining');
+
+      // Add more detailed logging
+      final resetTime = headers['x-ratelimit-reset'];
+      if (resetTime != null) {
+        _debugPrint('Rate limit will reset at: $resetTime');
+      }
     }
 
     if (response.statusCode == 429) {
-      _debugPrint('Rate limit hit. Delaying...');
-      await Future.delayed(Duration(seconds: 15));
+      _debugPrint('Rate limit hit for $model');
+      if (response.headers.containsKey('retry-after')) {
+        final retryAfter =
+            int.tryParse(response.headers['retry-after'] ?? '15') ?? 15;
+        _debugPrint('Waiting for $retryAfter seconds before retry');
+        await Future.delayed(Duration(seconds: retryAfter));
+      } else {
+        await Future.delayed(Duration(seconds: 15));
+      }
     }
   }
 }

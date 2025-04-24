@@ -528,9 +528,8 @@ class _HomeScreenState extends State<HomeScreen>
                       icon: Icons.share,
                       color: Colors.white,
                     ),
-                  ],
-                ),
-                ElevatedButton.icon(
+                    Spacer(),
+                    ElevatedButton.icon(
                   onPressed: () =>
                       _downloadImage(imageBytes, title.replaceAll(" ", "_")),
                   icon: Icon(Icons.download),
@@ -544,6 +543,9 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
                 ),
+                  ],
+                ),
+                
               ],
             ),
           ),
