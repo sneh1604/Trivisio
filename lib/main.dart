@@ -7,6 +7,9 @@ import 'package:sample_login/screens/home_screen.dart';
 import 'package:sample_login/screens/description_screen.dart';
 import 'package:sample_login/screens/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sample_login/screens/gallery_screen.dart';
+import 'package:sample_login/services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,73 +21,30 @@ void main() async {
   }
 
   await Firebase.initializeApp();
-  runApp(MyApp());
+
+  final prefs = await SharedPreferences.getInstance();
+  final storageService = StorageService(prefs);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthService>(
+          create: (context) => AuthService(),
+        ),
+        Provider<StorageService>.value(value: storageService),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AuthService>(
-          create: (context) => AuthService(),
-        ),
-      ],
-      child: Consumer<AuthService>(
-        builder: (context, authService, _) {
-          if (!authService.isInitialized) {
-            // Show loading screen until auth state is determined
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'TRIVISIO',
-              theme: ThemeData(
-                brightness: Brightness.dark,
-                primaryColor: Color(0xFF6C63FF),
-                colorScheme: ColorScheme.dark(
-                  primary: Color(0xFF6C63FF),
-                  secondary: Color(0xFF03DAC5),
-                  surface: Color(0xFF121212),
-                  background: Color(0xFF121212),
-                ),
-                scaffoldBackgroundColor: Color(0xFF121212),
-                fontFamily: 'Montserrat',
-                textTheme: TextTheme(
-                  headlineMedium: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                appBarTheme: AppBarTheme(
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                ),
-              ),
-              home: Scaffold(
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "TRIVISIO",
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF6C63FF),
-                          letterSpacing: 3,
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-
+    return Consumer<AuthService>(
+      builder: (context, authService, _) {
+        if (!authService.isInitialized) {
+          // Show loading screen until auth state is determined
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'TRIVISIO',
@@ -110,10 +70,60 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.transparent,
               ),
             ),
-            home: authService.user != null ? MainScreen() : LoginScreen(),
+            home: Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "TRIVISIO",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6C63FF),
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
-        },
-      ),
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'TRIVISIO',
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            primaryColor: Color(0xFF6C63FF),
+            colorScheme: ColorScheme.dark(
+              primary: Color(0xFF6C63FF),
+              secondary: Color(0xFF03DAC5),
+              surface: Color(0xFF121212),
+              background: Color(0xFF121212),
+            ),
+            scaffoldBackgroundColor: Color(0xFF121212),
+            fontFamily: 'Montserrat',
+            textTheme: TextTheme(
+              headlineMedium: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            appBarTheme: AppBarTheme(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
+          ),
+          home: authService.user != null ? MainScreen() : LoginScreen(),
+        );
+      },
     );
   }
 }
@@ -127,8 +137,9 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    HomeScreen(), // Home screen for image generation
-    DescriptionScreen(), // Details of AI models used
+    HomeScreen(),
+    GalleryScreen(), // Add Gallery screen
+    DescriptionScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -145,7 +156,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String _appBarTitles = ["Create", "Explore Models"][_selectedIndex];
+    final String _appBarTitles =
+        ["Create", "Gallery", "Explore Models"][_selectedIndex];
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -260,10 +272,16 @@ class _MainScreenState extends State<MainScreen> {
                       onTap: () => _onItemTapped(0),
                     ),
                     _buildDrawerItem(
-                      icon: Icons.psychology,
-                      title: "AI Models",
+                      icon: Icons.photo_library,
+                      title: "Gallery",
                       isSelected: _selectedIndex == 1,
                       onTap: () => _onItemTapped(1),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.psychology,
+                      title: "AI Models",
+                      isSelected: _selectedIndex == 2,
+                      onTap: () => _onItemTapped(2),
                     ),
                     Divider(color: Colors.white12),
                     _buildDrawerItem(
@@ -307,6 +325,10 @@ class _MainScreenState extends State<MainScreen> {
           NavigationDestination(
             icon: Icon(Icons.auto_awesome),
             label: 'Create',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.photo_library),
+            label: 'Gallery',
           ),
           NavigationDestination(
             icon: Icon(Icons.psychology),

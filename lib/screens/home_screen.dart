@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
 
     try {
-      final images = await _imageService.generateImages(_promptController.text);
+      final images = await _imageService.generateImages(_promptController.text, context);
       setState(() {
         _generatedImages = images;
 

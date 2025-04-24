@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/widgets.dart';
+import 'storage_service.dart';
 
 class ImageService {
   final String hfApiKey = dotenv.env['HUGGINGFACE_API_TOKEN'] ?? '';
@@ -14,7 +17,8 @@ class ImageService {
 
   final bool _isDebug = true;
 
-  Future<Map<String, Uint8List?>> generateImages(String prompt) async {
+  Future<Map<String, Uint8List?>> generateImages(
+      String prompt, BuildContext context) async {
     _debugPrint('Starting image generation for prompt: "$prompt"');
 
     try {
@@ -35,15 +39,18 @@ class ImageService {
           _debugPrint('Error in FLUX model: $e');
           return null;
         }),
-        // _generateImage(enhancedPrompt, stableDiffusionModel).catchError((e) {
-        //   _debugPrint('Error in Stable Diffusion: $e');
-        //   return null;
-        // }),
-        // _generateImage(enhancedPrompt, fluxSchnellModel).catchError((e) {
-        //   _debugPrint('Error in FLUX.Schnell model: $e');
-        //   return null;
-        // }),
       ]);
+
+      final successfulImages = Map<String, Uint8List>.fromEntries(
+        results.asMap().entries.where((e) => e.value != null).map(
+              (e) => MapEntry(_getModelName(e.key), e.value!),
+            ),
+      );
+
+      if (successfulImages.isNotEmpty) {
+        await Provider.of<StorageService>(context, listen: false)
+            .saveImage(prompt, successfulImages);
+      }
 
       return {
         "FLUX AI 1.0": results[0],
@@ -189,6 +196,19 @@ class ImageService {
       } else {
         await Future.delayed(Duration(seconds: 15));
       }
+    }
+  }
+
+  String _getModelName(int index) {
+    switch (index) {
+      case 0:
+        return "FLUX AI 1.0";
+      case 1:
+        return "Stable Diffusion 3.5";
+      case 2:
+        return "FLUX Schnell";
+      default:
+        return "Unknown Model";
     }
   }
 }
